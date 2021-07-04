@@ -47,10 +47,10 @@ def eligible_cascades(game, card):
     cascade_nums = []
     return cascade_nums
 
-#TODO: implement
 def free_cell_available(game):
-    available = False
-    return available
+    if len(game['free']) < 4:
+        return True
+    return False
 
 def add_free_cell_el(game, el):
     game = deepcopy(game)
