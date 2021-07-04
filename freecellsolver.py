@@ -1,4 +1,5 @@
 from collections import deque
+from copy import *
 
 class GameConstants:
     solution = {
@@ -51,21 +52,23 @@ def free_cell_available(game):
     available = False
     return available
 
-#TODO: implement
-def put_free_cell_el(game, el):
+def add_free_cell_el(game, el):
+    game = deepcopy(game)
+    el = copy(el)
+    game['free'].add(el)
     return game
 
 def add_card_to_cascades(game_base, cascade_nums, card):
     games = []
     for cascade_num in cascade_nums:
-        new_game = put_top_cascade_el(game_base.copy(), cascade_num, card.copy())
+        new_game = put_top_cascade_el(game_base, cascade_num, card)
         games.append(new_game)
     return games
 
 def add_card_to_foundation(game_base, card):
     games = []
-    game_base = game_base.copy()
-    if game_base['foundation'][card[1]] + 1 == card[1]:
+    game_base = deepcopy(game_base)
+    if card and game_base['foundation'][card[1]] + 1 == card[1]:
         game_base['foundation'][card[1]] += 1
         games.append(game_base)
     return games
@@ -78,8 +81,8 @@ def next_games_cascades(game):
         new_game_base = del_top_cascade_el(game, i)
         games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
         games += add_card_to_foundation(new_game_base, card_to_move)
-        if free_cell_available(game):
-            new_game = put_free_cell_el(new_game_base, card_to_move)
+        if card_to_move and free_cell_available(game):
+            new_game = add_free_cell_el(new_game_base, card_to_move)
             games.append(new_game)
     return games
 
@@ -87,7 +90,7 @@ def next_games_free(game):
     games = []
     for card_to_move in game['free']:
         cascade_nums = eligible_cascades(game, card_to_move)
-        new_game_base = game.copy()['free'].remove(card_to_move)
+        new_game_base = deepcopy(game)['free'].remove(card_to_move)
         games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
         games += add_card_to_foundation(new_game_base, card_to_move)
     return games
