@@ -29,22 +29,22 @@ initial_game = {
 }
 
 #TODO: implement
-def peek_top_stack_el(game, stack_num):
-    top_stack_el = []
-    return top_stack_el
+def peek_top_cascade_el(game, cascade_num):
+    top_cascade_el = []
+    return top_cascade_el
 
 #TODO: implement
-def del_top_stack_el(game, stack_num):
+def del_top_cascade_el(game, cascade_num):
     return game
 
 #TODO: implement
-def put_top_stack_el(game, stack_num, el):
+def put_top_cascade_el(game, cascade_num, el):
     return game
 
 #TODO: implement
-def eligible_stacks(game, card):
-    stack_nums = []
-    return stack_nums
+def eligible_cascades(game, card):
+    cascade_nums = []
+    return cascade_nums
 
 #TODO: implement
 def free_cell_available(game):
@@ -55,28 +55,29 @@ def free_cell_available(game):
 def put_free_cell_el(game, el):
     return game
 
-def add_card_to_stacks(game_base, stack_nums, card):
+def add_card_to_cascades(game_base, cascade_nums, card):
     games = []
-    for stack_num in stack_nums:
-        new_game = put_top_stack_el(game_base.copy(), stack_num, card.copy())
+    for cascade_num in cascade_nums:
+        new_game = put_top_cascade_el(game_base.copy(), cascade_num, card.copy())
         games.append(new_game)
     return games
 
-#TODO: implement
-def add_card_to_solution(game_base, card):
+def add_card_to_foundation(game_base, card):
     games = []
     game_base = game_base.copy()
-    if game_base[0]
+    if game_base['foundation'][card[1]] + 1 == card[1]:
+        game_base['foundation'][card[1]] += 1
+        games.append(game_base)
     return games
 
 def next_games_cascades(game):
     games = []
     for i in range(8):
-        card_to_move = peek_top_stack_el(game, i)
-        stack_nums = eligible_stacks(game, card_to_move)
-        new_game_base = del_top_stack_el(game, i)
-        games += add_card_to_stacks(new_game_base, stack_nums, card_to_move)
-        games += add_card_to_solution(new_game_base, card_to_move)
+        card_to_move = peek_top_cascade_el(game, i)
+        cascade_nums = eligible_cascades(game, card_to_move)
+        new_game_base = del_top_cascade_el(game, i)
+        games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
+        games += add_card_to_foundation(new_game_base, card_to_move)
         if free_cell_available(game):
             new_game = put_free_cell_el(new_game_base, card_to_move)
             games.append(new_game)
@@ -85,10 +86,10 @@ def next_games_cascades(game):
 def next_games_free(game):
     games = []
     for card_to_move in game['free']:
-        stack_nums = eligible_stacks(game, card_to_move)
+        cascade_nums = eligible_cascades(game, card_to_move)
         new_game_base = game.copy()['free'].remove(card_to_move)
-        games += add_card_to_stacks(new_game_base, stack_nums, card_to_move)
-        games += add_card_to_solution(new_game_base, card_to_move)
+        games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
+        games += add_card_to_foundation(new_game_base, card_to_move)
     return games
 
 def next_games(game):
@@ -122,7 +123,7 @@ def find_solution_steps(initial_game):
                 games_queue.append(game)
                 if game_str == GameConstants.solution_str:
                     return games_dict_as_list(games_dict)
-    return None
+    return []
 
 solution = find_solution_steps(initial_game)
 
