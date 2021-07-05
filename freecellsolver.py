@@ -26,16 +26,20 @@ initial_game = {
         [],
         [],
         [],
-        [[13, 3]]]
+        [(13, 3)]]
 }
 
 def peek_top_cascade_el(game, cascade_num):
-    top_cascade_el = game['cascades'][cascade_num][-1]
+    cascade = game['cascades'][cascade_num]
+    top_cascade_el = []
+    if cascade:
+        top_cascade_el = cascade[-1]
     return copy(top_cascade_el)
 
 def del_top_cascade_el(game, cascade_num):
     game = deepcopy(game)
-    game['cascades'][cascade_num].pop()
+    if game['cascades'][cascade_num]:
+        game['cascades'][cascade_num].pop()
     return game
 
 def put_top_cascade_el(game, cascade_num, el):
@@ -47,9 +51,10 @@ def eligible_cascades(game, card):
     cascade_nums = []
     for i in range(8):
         top_card = peek_top_cascade_el(game, i)
-        # check if new card is preceding rank and of opposite color suit
-        if top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0:
-            cascade_nums.append(i)
+        if top_card and card:
+            # check if new card is preceding rank and of opposite color suit
+            if top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0:
+                cascade_nums.append(i)
     return cascade_nums
 
 def free_cell_available(game):
@@ -73,9 +78,10 @@ def add_card_to_cascades(game_base, cascade_nums, card):
 def add_card_to_foundation(game_base, card):
     games = []
     game_base = deepcopy(game_base)
-    if card and game_base['foundation'][card[1]] + 1 == card[1]:
-        game_base['foundation'][card[1]] += 1
-        games.append(game_base)
+    if card and game_base:
+        if game_base['foundation'][card[1]] + 1 == card[1]:
+            game_base['foundation'][card[1]] += 1
+            games.append(game_base)
     return games
 
 def next_games_cascades(game):
