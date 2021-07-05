@@ -29,17 +29,18 @@ initial_game = {
         [[13, 3]]]
 }
 
-#TODO: implement
 def peek_top_cascade_el(game, cascade_num):
-    top_cascade_el = []
-    return top_cascade_el
+    top_cascade_el = game['cascades'][cascade_num][-1]
+    return copy(top_cascade_el)
 
-#TODO: implement
 def del_top_cascade_el(game, cascade_num):
+    game = deepcopy(game)
+    game['cascades'][cascade_num].pop()
     return game
 
-#TODO: implement
 def put_top_cascade_el(game, cascade_num, el):
+    game = deepcopy(game)
+    game['cascades'][cascade_num].append(el)
     return game
 
 def eligible_cascades(game, card):
