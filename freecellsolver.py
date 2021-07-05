@@ -1,5 +1,5 @@
 from collections import deque
-from copy import *
+from copy import copy, deepcopy
 
 class GameConstants:
     solution = {
@@ -42,9 +42,13 @@ def del_top_cascade_el(game, cascade_num):
 def put_top_cascade_el(game, cascade_num, el):
     return game
 
-#TODO: implement
 def eligible_cascades(game, card):
     cascade_nums = []
+    for i in range(8):
+        top_card = peek_top_cascade_el(game, i)
+        # check if new card is preceding rank and of opposite color suit
+        if top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0:
+            cascade_nums.append(i)
     return cascade_nums
 
 def free_cell_available(game):
