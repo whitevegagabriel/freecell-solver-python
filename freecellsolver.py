@@ -224,7 +224,7 @@ def find_solution_steps(initial_game):
                 games_set.add(game_str)
                 games_dict[game_str] = game_to_process_str
                 # if only one possible move available, process immediately
-                if len(possible_next_games) == 1:
+                if game['foundation'] != game_to_process['foundation']:
                     games_queue.appendleft(game)
                 else:
                     games_queue.append(game)
