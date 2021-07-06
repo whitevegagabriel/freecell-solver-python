@@ -100,8 +100,9 @@ def is_smallest_card(game, card):
         return smallest_card_rank == card[0]
     return False
 
-def next_games_cascades(game):
+def next_games(game):
     games = []
+    # find next games in cascades
     for i in range(8):
         card_to_move = peek_top_cascade_el(game, i)
         new_game_base = del_top_cascade_el(game, i)
@@ -113,9 +114,9 @@ def next_games_cascades(game):
                 games.append(new_game)
                 games += add_card_to_foundation(new_game_base, card_to_move)
         else:
-            games = []
-            games += add_card_to_foundation(new_game_base, card_to_move)
-            return games
+            # if card is smallest, only next move is in foundation
+            return add_card_to_foundation(new_game_base, card_to_move)
+    # find next games in free cells
     for card_to_move in game['free']:
         cascade_nums = eligible_cascades(game, card_to_move)
         new_game_base = deepcopy(game)
@@ -124,25 +125,8 @@ def next_games_cascades(game):
             games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
             games += add_card_to_foundation(new_game_base, card_to_move)
         else:
-            games = []
-            games += add_card_to_foundation(new_game_base, card_to_move)
-            return games
-    return games
-
-def next_games_free(game):
-    games = []
-    for card_to_move in game['free']:
-        cascade_nums = eligible_cascades(game, card_to_move)
-        new_game_base = deepcopy(game)
-        new_game_base['free'].remove(card_to_move)
-        games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
-        games += add_card_to_foundation(new_game_base, card_to_move)
-    return games
-
-def next_games(game):
-    games = []
-    games += next_games_cascades(game)
-    # games += next_games_free(game)
+            # if card is smallest, only next move is in foundation
+            return add_card_to_foundation(new_game_base, card_to_move)
     return games
 
 def games_dict_as_list(games_dict):
