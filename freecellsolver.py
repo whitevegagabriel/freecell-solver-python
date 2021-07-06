@@ -209,7 +209,7 @@ def find_solution_steps(initial_game):
     games_queue = deque()
     games_queue.append(initial_game)
 
-    i = 0
+    i = 1
     start = time.time()
     total = 0
     # loops until no games in queue
@@ -223,14 +223,19 @@ def find_solution_steps(initial_game):
             if game_str not in games_set:
                 games_set.add(game_str)
                 games_dict[game_str] = game_to_process_str
-                games_queue.append(game)
+                # if only one possible move available, process immediately
+                if len(possible_next_games) == 1:
+                    games_queue.appendleft(game)
+                else:
+                    games_queue.append(game)
                 if game_str == GameConstants.solution_str:
+                    print(f"Total rounds: {i}")
                     return games_dict_as_list(games_dict)
         i += 1
         if i % 1000 == 0:
             elapsed = time.time() - start
             total += elapsed
-            print(f"Elapsed: {elapsed:f}    Average Time / 1000 R: {total*1000/i:f}    Average Added / Round: {len(games_set)/i:f}")
+            print(f"Elapsed: {elapsed:f}    Average Time / 1000 R: {total*1000/i:f}    Average Added / Round: {len(games_set)/i:f} Rounds Total: {i}")
             start = time.time()
     return ['No solution found']
 
