@@ -47,14 +47,22 @@ def put_top_cascade_el(game, cascade_num, el):
     game['cascades'][cascade_num].append(el)
     return game
 
-def eligible_cascades(game, card):
+def eligible_cascades(game, card, source_stack_num=-1):
     cascade_nums = []
-    for i in range(8):
+    is_last_card = len(game['cascades'][source_stack_num]) == 0
+    eligible_range = (j for j in range(0, 8) if j != source_stack_num)
+    empty_stack_added = False
+    for i in eligible_range:
         top_card = peek_top_cascade_el(game, i)
-        if top_card and card:
+        if card:
+            if not top_card:
+                if (not is_last_card or source_stack_num == -1) and not empty_stack_added:
+                    cascade_nums.append(i)
+                    empty_stack_added = True
             # check if new card is preceding rank and of opposite color suit
-            if top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0:
+            elif (top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0):
                 cascade_nums.append(i)
+            
     return cascade_nums
 
 def free_cell_available(game):
@@ -79,7 +87,7 @@ def add_card_to_foundation(game_base, card):
     games = []
     game_base = deepcopy(game_base)
     if card and game_base:
-        if game_base['foundation'][card[1]] + 1 == card[1]:
+        if game_base['foundation'][card[1]] + 1 == card[0]:
             game_base['foundation'][card[1]] += 1
             games.append(game_base)
     return games
@@ -88,8 +96,8 @@ def next_games_cascades(game):
     games = []
     for i in range(8):
         card_to_move = peek_top_cascade_el(game, i)
-        cascade_nums = eligible_cascades(game, card_to_move)
         new_game_base = del_top_cascade_el(game, i)
+        cascade_nums = eligible_cascades(new_game_base, card_to_move, i)
         games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
         games += add_card_to_foundation(new_game_base, card_to_move)
         if card_to_move and free_cell_available(game):
@@ -101,7 +109,8 @@ def next_games_free(game):
     games = []
     for card_to_move in game['free']:
         cascade_nums = eligible_cascades(game, card_to_move)
-        new_game_base = deepcopy(game)['free'].remove(card_to_move)
+        new_game_base = deepcopy(game)
+        new_game_base['free'].remove(card_to_move)
         games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
         games += add_card_to_foundation(new_game_base, card_to_move)
     return games
@@ -135,9 +144,9 @@ def find_solution_steps(initial_game):
                 games_set.add(game_str)
                 games_dict[game_str] = game_to_process_str
                 games_queue.append(game)
-                if game_str == GameConstants.solution_str:
-                    return games_dict_as_list(games_dict)
-    return []
+                # if game_str == GameConstants.solution_str:
+                #     return games_dict_as_list(games_dict)
+    return games_dict
 
 solution = find_solution_steps(initial_game)
 
