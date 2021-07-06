@@ -2,6 +2,7 @@ from collections import deque
 from copy import copy, deepcopy
 import datetime
 import time
+import re
 
 class GameConstants:
     solution = {
@@ -17,7 +18,71 @@ class GameConstants:
          []]
     }
     solution_str = str(solution)
+    game_tmplt = {
+        'foundation' : [0, 0, 0, 0],
+        'free' : set(),
+        'cascades' : [[],
+         [],
+         [],
+         [],
+         [],
+         [],
+         [],
+         []]
+    }
+    rank_dict = {
+        'A' : 1,
+        '2' : 2,
+        '3' : 3,
+        '4' : 4,
+        '5' : 5,
+        '6' : 6,
+        '7' : 7,
+        '8' : 8,
+        '9' : 9,
+        'T' : 10,
+        'J' : 11,
+        'Q' : 12,
+        'K' : 13
+    }
+    suit_dict = {
+        'H' : 0,
+        'C' : 1,
+        'D' : 2,
+        'S' : 3
+    }
 
+def convert_game_str_to_structure(online_game_lines):
+    regex_foundation = '\d'
+    regex_free = '[\dJQKAT][HCDS]'
+    regex_cascades = '[\dJQKAT][HCDS]'
+
+    game = copy(GameConstants.game_tmplt)
+    rank_dict = copy(GameConstants.rank_dict)
+    suit_dict = copy(GameConstants.suit_dict)
+
+    foundation_re = re.findall(regex_foundation, online_game_lines[0])
+    i = 0
+    # fill the foundation with matching cards
+    for card in foundation_re:
+        game['foundation'][i] = int(card)
+        i += 1
+
+    free_re = re.findall(regex_free, online_game_lines[1])
+    # fill the free cells with matching cards
+    for card in free_re:
+        game['free'].add((rank_dict[card[0]], suit_dict[card[1]]))
+    
+    i = 0
+    for line in online_game_lines[2:]:
+        cascade_re = re.findall(regex_cascades, line)
+        # fill the cascades with matching cards
+        for card in cascade_re:
+            game['cascades'][i].append((rank_dict[card[0]], suit_dict[card[1]]))
+        i += 1
+    
+    return game
+    
 initial_game = {
     'foundation' : [7, 6, 6, 5],
     'free' : {(12, 3), (13, 0), (12, 1), (13, 2)},
@@ -168,6 +233,14 @@ def find_solution_steps(initial_game):
             print(f"Elapsed: {elapsed:f}    Average Time / 1000 R: {total*1000/i:f}    Average Added / Round: {len(games_set)/i:f}")
             start = time.time()
     return ['No solution found']
+
+f = open("initial_game.txt", 'r')
+initial_game_str = f.readlines()
+f.close()
+
+initial_game = convert_game_str_to_structure(initial_game_str)
+
+print(initial_game)
 
 print(datetime.datetime.now())
 solution = find_solution_steps(initial_game)
