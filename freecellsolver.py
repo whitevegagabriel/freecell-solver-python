@@ -1,5 +1,6 @@
 from collections import deque
 from copy import copy, deepcopy
+import datetime
 
 class GameConstants:
     solution = {
@@ -17,16 +18,16 @@ class GameConstants:
     solution_str = str(solution)
 
 initial_game = {
-    'foundation' : [13, 13, 13, 12],
+    'foundation' : [7, 6, 6, 5],
     'free' : set(),
-    'cascades' : [[],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [(13, 3)]]
+    'cascades' : [[(11, 2), (10, 1), (9, 2), (8, 3), (7, 2)],
+                  [(6, 3)],
+                  [(13, 1), (12, 1), (11, 3), (10, 0), (9, 1), (8, 0), (7, 1)],
+                  [(11, 0)],
+                  [(10, 3), (9, 0), (8, 1)],
+                  [],
+                  [(13, 3)],
+                  [(12, 2), (11, 1), (10, 2), (9, 3), (8, 2), (7, 3)]]
 }
 
 def peek_top_cascade_el(game, cascade_num):
@@ -153,7 +154,9 @@ def find_solution_steps(initial_game):
                     return games_dict_as_list(games_dict)
     return ['No solution found']
 
+print(datetime.datetime.now())
 solution = find_solution_steps(initial_game)
+print(datetime.datetime.now())
 
 for step in solution:
     print(step)
