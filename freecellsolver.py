@@ -123,7 +123,12 @@ def next_games(game):
 
 #TODO: implement
 def games_dict_as_list(games_dict):
+    parent = GameConstants.solution_str
     games_list = []
+    while parent != None:
+        games_list.append(parent)
+        parent = games_dict[parent]
+    games_list.reverse()
     return games_list
 
 def find_solution_steps(initial_game):
@@ -144,9 +149,9 @@ def find_solution_steps(initial_game):
                 games_set.add(game_str)
                 games_dict[game_str] = game_to_process_str
                 games_queue.append(game)
-                # if game_str == GameConstants.solution_str:
-                #     return games_dict_as_list(games_dict)
-    return games_dict
+                if game_str == GameConstants.solution_str:
+                    return games_dict_as_list(games_dict)
+    return ['No solution found']
 
 solution = find_solution_steps(initial_game)
 
