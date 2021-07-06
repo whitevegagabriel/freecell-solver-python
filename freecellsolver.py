@@ -20,10 +20,10 @@ class GameConstants:
 
 initial_game = {
     'foundation' : [7, 6, 6, 5],
-    'free' : set(),
+    'free' : {(12, 3), (13, 0), (12, 1), (13, 2)},
     'cascades' : [[(11, 2), (10, 1), (9, 2), (8, 3), (7, 2)],
                   [(6, 3)],
-                  [(13, 1), (12, 1), (11, 3), (10, 0), (9, 1), (8, 0), (7, 1)],
+                  [(13, 1), (12, 0), (11, 3), (10, 0), (9, 1), (8, 0), (7, 1)],
                   [(11, 0)],
                   [(10, 3), (9, 0), (8, 1)],
                   [],
@@ -111,8 +111,22 @@ def next_games_cascades(game):
             if card_to_move and free_cell_available(game):
                 new_game = add_free_cell_el(new_game_base, card_to_move)
                 games.append(new_game)
-        games += add_card_to_foundation(new_game_base, card_to_move)
-
+                games += add_card_to_foundation(new_game_base, card_to_move)
+        else:
+            games = []
+            games += add_card_to_foundation(new_game_base, card_to_move)
+            return games
+    for card_to_move in game['free']:
+        cascade_nums = eligible_cascades(game, card_to_move)
+        new_game_base = deepcopy(game)
+        new_game_base['free'].remove(card_to_move)
+        if not is_smallest_card(game, card_to_move):
+            games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
+            games += add_card_to_foundation(new_game_base, card_to_move)
+        else:
+            games = []
+            games += add_card_to_foundation(new_game_base, card_to_move)
+            return games
     return games
 
 def next_games_free(game):
@@ -128,7 +142,7 @@ def next_games_free(game):
 def next_games(game):
     games = []
     games += next_games_cascades(game)
-    games += next_games_free(game)
+    # games += next_games_free(game)
     return games
 
 def games_dict_as_list(games_dict):
