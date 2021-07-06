@@ -96,14 +96,29 @@ initial_game = {
                   [(12, 2), (11, 1), (10, 2), (9, 3), (8, 2), (7, 3)]]
 }
 
-def peek_top_cascade_el(game, cascade_num):
-    cascade = game['cascades'][cascade_num]
-    top_cascade_el = []
-    if cascade:
-        top_cascade_el = cascade[-1]
-    return copy(top_cascade_el)
+#TODO implement
+def eligible_pair(top, bottom):
+    return False
 
-def del_top_cascade_el(game, cascade_num):
+def peek_top_cascade_el(game, cascade_num):
+    card_groups = []
+    card_group_eligible_stacks = []
+    cascade = game['cascades'][cascade_num]
+    for i in range(len(cascade)):
+        card_group = cascade[(-i-1):]
+        if len(card_group) == 1:
+            card_groups.append(card_group)
+        elif eligible_pair(card_group[0], card_group[1]):
+            card_groups.append(card_group)
+        else:
+            break
+    for card_group in card_groups:
+        card_group_eligible_stacks.append(eligible_cascades(game, card_group, cascade_num))
+
+    return card_groups, card_group_eligible_stacks
+
+#TODO implement
+def del_top_cascade_els(game, cascade_num):
     game = deepcopy(game)
     if game['cascades'][cascade_num]:
         game['cascades'][cascade_num].pop()
@@ -115,6 +130,25 @@ def put_top_cascade_el(game, cascade_num, el):
     return game
 
 def eligible_cascades(game, card, source_stack_num=-1):
+    cascade_nums = []
+    is_last_card = len(game['cascades'][source_stack_num]) == 0
+    eligible_range = (j for j in range(0, 8) if j != source_stack_num)
+    empty_stack_added = False
+    for i in eligible_range:
+        top_card = peek_top_cascade_el(game, i)
+        if card:
+            if not top_card:
+                if (not is_last_card or source_stack_num == -1) and not empty_stack_added:
+                    cascade_nums.append(i)
+                    empty_stack_added = True
+            # check if new card is preceding rank and of opposite color suit
+            elif (top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0):
+                cascade_nums.append(i)
+            
+    return cascade_nums
+
+#TODO implement
+def determine_groups_and_cascades(game, card_group, source_stack_num=-1):
     cascade_nums = []
     is_last_card = len(game['cascades'][source_stack_num]) == 0
     eligible_range = (j for j in range(0, 8) if j != source_stack_num)
@@ -159,6 +193,11 @@ def add_card_to_foundation(game_base, card):
             games.append(game_base)
     return games
 
+#TODO implement
+def generage_new_games(game, nums, groups):
+    games = []
+    return games
+
 def is_smallest_card(game, card):
     smallest_card_rank = min(game['foundation']) + 1
     if card:
@@ -169,29 +208,16 @@ def next_games(game):
     games = []
     # find next games in cascades
     for i in range(8):
-        card_to_move = peek_top_cascade_el(game, i)
-        new_game_base = del_top_cascade_el(game, i)
-        if not is_smallest_card(game, card_to_move):
-            cascade_nums = eligible_cascades(new_game_base, card_to_move, i)
-            games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
-            if card_to_move and free_cell_available(game):
-                new_game = add_free_cell_el(new_game_base, card_to_move)
-                games.append(new_game)
-                games += add_card_to_foundation(new_game_base, card_to_move)
-        else:
-            # if card is smallest, only next move is in foundation
-            return add_card_to_foundation(new_game_base, card_to_move)
+        card_groups_to_move, card_group_cascade_nums = determine_groups_and_cascades(game, i)
+        new_game_bases = del_top_cascade_els(game, i, card_groups_to_move)
+        games += generage_new_games(new_game_bases, card_group_cascade_nums, card_groups_to_move)
     # find next games in free cells
     for card_to_move in game['free']:
         cascade_nums = eligible_cascades(game, card_to_move)
         new_game_base = deepcopy(game)
         new_game_base['free'].remove(card_to_move)
-        if not is_smallest_card(game, card_to_move):
-            games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
-            games += add_card_to_foundation(new_game_base, card_to_move)
-        else:
-            # if card is smallest, only next move is in foundation
-            return add_card_to_foundation(new_game_base, card_to_move)
+        games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
+        games += add_card_to_foundation(new_game_base, card_to_move)
     return games
 
 def games_dict_as_list(games_dict):
