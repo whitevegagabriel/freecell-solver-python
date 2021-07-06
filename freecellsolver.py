@@ -1,6 +1,7 @@
 from collections import deque
 from copy import copy, deepcopy
 import datetime
+import time
 
 class GameConstants:
     solution = {
@@ -93,17 +94,25 @@ def add_card_to_foundation(game_base, card):
             games.append(game_base)
     return games
 
+def is_smallest_card(game, card):
+    smallest_card_rank = min(game['foundation']) + 1
+    if card:
+        return smallest_card_rank == card[0]
+    return False
+
 def next_games_cascades(game):
     games = []
     for i in range(8):
         card_to_move = peek_top_cascade_el(game, i)
         new_game_base = del_top_cascade_el(game, i)
-        cascade_nums = eligible_cascades(new_game_base, card_to_move, i)
-        games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
+        if not is_smallest_card(game, card_to_move):
+            cascade_nums = eligible_cascades(new_game_base, card_to_move, i)
+            games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
+            if card_to_move and free_cell_available(game):
+                new_game = add_free_cell_el(new_game_base, card_to_move)
+                games.append(new_game)
         games += add_card_to_foundation(new_game_base, card_to_move)
-        if card_to_move and free_cell_available(game):
-            new_game = add_free_cell_el(new_game_base, card_to_move)
-            games.append(new_game)
+
     return games
 
 def next_games_free(game):
@@ -122,7 +131,6 @@ def next_games(game):
     games += next_games_free(game)
     return games
 
-#TODO: implement
 def games_dict_as_list(games_dict):
     parent = GameConstants.solution_str
     games_list = []
@@ -138,6 +146,9 @@ def find_solution_steps(initial_game):
     games_queue = deque()
     games_queue.append(initial_game)
 
+    i = 0
+    start = time.time()
+    total = 0
     # loops until no games in queue
     while games_queue:
         game_to_process = games_queue.popleft()
@@ -152,6 +163,12 @@ def find_solution_steps(initial_game):
                 games_queue.append(game)
                 if game_str == GameConstants.solution_str:
                     return games_dict_as_list(games_dict)
+        i += 1
+        if i % 1000 == 0:
+            elapsed = time.time() - start
+            total += elapsed
+            print(f"Elapsed: {elapsed:f}    Average Time / 1000 R: {total*1000/i:f}    Average Added / Round: {len(games_set)/i:f}")
+            start = time.time()
     return ['No solution found']
 
 print(datetime.datetime.now())
