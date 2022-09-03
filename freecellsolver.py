@@ -96,14 +96,65 @@ initial_game = {
                   [(12, 2), (11, 1), (10, 2), (9, 3), (8, 2), (7, 3)]]
 }
 
-#TODO implement
 def eligible_pair(top, bottom):
-    return False
+    return top[0] - 1 == bottom[0] and (top[1] + bottom[1]) % 2 != 0
 
 def peek_top_cascade_el(game, cascade_num):
+    cascade = game['cascades'][cascade_num]
+    top_cascade_el = []
+    if cascade:
+        top_cascade_el = cascade[-1]
+    return copy(top_cascade_el)
+
+#TODO implement
+def num_empty_cascades(game, i):
+    return 0
+
+#TODO implement
+def del_top_cascade_els(game, largest_stack):
+    game_bases = []
+    game = deepcopy(game)
+    if game['cascades'][cascade_num]:
+        game['cascades'][cascade_num].pop()
+    return game_bases
+
+#TODO implement
+def max_stack(game, card_group, source_stack_num):
+    return 0
+
+def put_top_cascade_el(game, cascade_num, el):
+    game = deepcopy(game)
+    game['cascades'][cascade_num].append(el)
+    return game
+
+#TODO: implement
+def eligible_cascades(game, card_group, source_stack_num=-1):
+    cascade_nums = []
+    is_last = len(game['cascades'][source_stack_num]) == len(card_group)
+    eligible_range = (j for j in range(0, 8) if j != source_stack_num)
+    empty_stack_added = False
+    for i in eligible_range:
+        surface_card = peek_top_cascade_el(game, i)
+        empty_cascades = num_empty_cascades(game, i)
+        empty_freecells = 4 - len(game['free'])
+        max_stack = max_stack(game, card_group, source_stack_num)
+        if len(card_group) > 0:
+            if not surface_card:
+                if (not is_last or source_stack_num == -1) and not empty_stack_added:
+                    #TODO: check whether length is <= max length for destination
+                    cascade_nums.append(i)
+                    empty_stack_added = True
+            # check if new card is preceding rank and of opposite color suit
+            elif eligible_pair(card_group[0], surface_card):
+                #TODO: check whether length is <= max length for destination
+                cascade_nums.append(i)
+            
+    return cascade_nums
+
+def determine_groups_and_cascades(game, source_stack_num):
     card_groups = []
     card_group_eligible_stacks = []
-    cascade = game['cascades'][cascade_num]
+    cascade = game['cascades'][source_stack_num]
     for i in range(len(cascade)):
         card_group = cascade[(-i-1):]
         if len(card_group) == 1:
@@ -113,58 +164,8 @@ def peek_top_cascade_el(game, cascade_num):
         else:
             break
     for card_group in card_groups:
-        card_group_eligible_stacks.append(eligible_cascades(game, card_group, cascade_num))
-
+        card_group_eligible_stacks.append(eligible_cascades(game, card_group, source_stack_num))
     return card_groups, card_group_eligible_stacks
-
-#TODO implement
-def del_top_cascade_els(game, cascade_num):
-    game = deepcopy(game)
-    if game['cascades'][cascade_num]:
-        game['cascades'][cascade_num].pop()
-    return game
-
-def put_top_cascade_el(game, cascade_num, el):
-    game = deepcopy(game)
-    game['cascades'][cascade_num].append(el)
-    return game
-
-def eligible_cascades(game, card, source_stack_num=-1):
-    cascade_nums = []
-    is_last_card = len(game['cascades'][source_stack_num]) == 0
-    eligible_range = (j for j in range(0, 8) if j != source_stack_num)
-    empty_stack_added = False
-    for i in eligible_range:
-        top_card = peek_top_cascade_el(game, i)
-        if card:
-            if not top_card:
-                if (not is_last_card or source_stack_num == -1) and not empty_stack_added:
-                    cascade_nums.append(i)
-                    empty_stack_added = True
-            # check if new card is preceding rank and of opposite color suit
-            elif (top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0):
-                cascade_nums.append(i)
-            
-    return cascade_nums
-
-#TODO implement
-def determine_groups_and_cascades(game, card_group, source_stack_num=-1):
-    cascade_nums = []
-    is_last_card = len(game['cascades'][source_stack_num]) == 0
-    eligible_range = (j for j in range(0, 8) if j != source_stack_num)
-    empty_stack_added = False
-    for i in eligible_range:
-        top_card = peek_top_cascade_el(game, i)
-        if card:
-            if not top_card:
-                if (not is_last_card or source_stack_num == -1) and not empty_stack_added:
-                    cascade_nums.append(i)
-                    empty_stack_added = True
-            # check if new card is preceding rank and of opposite color suit
-            elif (top_card[0] - 1 == card[0] and (top_card[1] + card[1]) % 2 != 0):
-                cascade_nums.append(i)
-            
-    return cascade_nums
 
 def free_cell_available(game):
     if len(game['free']) < 4:
@@ -209,11 +210,11 @@ def next_games(game):
     # find next games in cascades
     for i in range(8):
         card_groups_to_move, card_group_cascade_nums = determine_groups_and_cascades(game, i)
-        new_game_bases = del_top_cascade_els(game, i, card_groups_to_move)
+        new_game_bases = del_top_cascade_els(game, i, len(card_groups_to_move))
         games += generage_new_games(new_game_bases, card_group_cascade_nums, card_groups_to_move)
     # find next games in free cells
     for card_to_move in game['free']:
-        cascade_nums = eligible_cascades(game, card_to_move)
+        cascade_nums = eligible_cascades(game, [card_to_move])
         new_game_base = deepcopy(game)
         new_game_base['free'].remove(card_to_move)
         games += add_card_to_cascades(new_game_base, cascade_nums, card_to_move)
