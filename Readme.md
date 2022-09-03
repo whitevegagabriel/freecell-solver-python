@@ -1,2 +1,2 @@
-Website:
+Reference:
     https://fc-solve.shlomifish.org/js-fc-solve/text/
